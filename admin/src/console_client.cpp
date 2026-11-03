@@ -41,7 +41,7 @@ std::string validated_token(std::string token) {
   return token;
 }
 
-// Accepts an origin such as http://127.0.0.1:8080 (HTTP is loopback-only) or an HTTPS origin.
+// Accepts an origin such as http://127.0.0.1:8082 (HTTP is loopback-only) or an HTTPS origin.
 std::string validated_origin(const std::string &url) {
   auto origin = trim(url);
   while (!origin.empty() && origin.back() == '/') {

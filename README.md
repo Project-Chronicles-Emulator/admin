@@ -18,3 +18,6 @@ are excluded from this repository.
 Shared desktop/protocol helpers needed by this application are included in this checkout;
 no sibling repository is required to build it. Backend data and database installation
 belong to the separate `game-server` repository.
+
+Default local service: http://127.0.0.1:8082 (game-server).
+Existing saved server settings are preserved.

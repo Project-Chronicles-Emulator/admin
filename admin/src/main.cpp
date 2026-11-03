@@ -30,7 +30,7 @@ namespace {
 using Json = nlohmann::json;
 
 constexpr wchar_t kWindowTitle[] = L"Project Chronicles Server Admin";
-constexpr char kDefaultServerUrl[] = "http://127.0.0.1:8080";
+constexpr char kDefaultServerUrl[] = "http://127.0.0.1:8082";
 // Enough for a log poll, a dashboard refresh and one slow request (such as a password hash)
 // to proceed together.
 constexpr std::size_t kWorkerCount = 3;
