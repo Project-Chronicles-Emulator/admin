@@ -42,3 +42,17 @@ Read the [architecture](https://github.com/Project-Chronicles-Emulator/game-serv
 reproduction and redacted evidence. Build/synthetic checks and original-client
 observations are distinct; the service split has not had a fresh original-client
 gameplay acceptance trial. Keep local credentials and generated/client files out of commits.
+
+## Preview downloads and reproducible releases
+
+The **Actions → Release preview** workflow builds a Windows x64 package from a
+clean checkout and creates a draft prerelease with its SHA-256 checksum. Choose a
+new `vMAJOR.MINOR.PATCH-preview.NUMBER` tag when dispatching it. A failed build does
+not create a release. Published previews appear on this repository's Releases page.
+
+Packages contain the application and selected support files only. They include no
+client installation, extracted game data, archive keys or credentials. Keep the whole
+package together; follow the setup instructions above before starting it. Windows
+C++ applications require the Microsoft Visual C++ x64 runtime; desktop interfaces
+also require Microsoft Edge WebView2 Runtime. The extractor package requires .NET 10.
+These experimental previews do not establish compatibility with another client build.
