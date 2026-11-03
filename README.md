@@ -40,8 +40,10 @@ Read the [architecture](https://github.com/Project-Chronicles-Emulator/game-serv
 [feature/bug workflow](https://github.com/Project-Chronicles-Emulator/game-server/blob/main/docs/guides/feature-workflow.md) and
 [testing guide](https://github.com/Project-Chronicles-Emulator/game-server/blob/main/docs/guides/testing.md). Report the exact component, commit,
 reproduction and redacted evidence. Build/synthetic checks and original-client
-observations are distinct; the service split has not had a fresh original-client
-gameplay acceptance trial. Keep local credentials and generated/client files out of commits.
+observations are distinct. A [bounded local split-service trial](https://github.com/Project-Chronicles-Emulator/game-server/blob/main/docs/fresh-install-validation-20261103.md)
+reached the tutorial with visible health/stamina and weapon actions. Full gameplay
+and compatibility with other client builds remain unverified. Keep local credentials
+and generated/client files out of commits.
 
 ## Preview downloads and reproducible releases
 
