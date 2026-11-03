@@ -1,0 +1,4 @@
+* text=auto eol=lf
+
+# Preserve imported protocol snapshots and their recorded hashes.
+protocol/** -text whitespace=cr-at-eol

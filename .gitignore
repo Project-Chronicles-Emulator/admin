@@ -1,0 +1,18 @@
+out/
+data/generated/
+vcpkg_installed/
+CMakeUserPresets.json
+__pycache__/
+.pytest_cache/
+*.local.json
+*.local.env
+.env
+.env.*
+!.env.example
+
+# Build intermediates that must never be committed
+obj/
+bin/
+*.obj
+*.pdb
+*.ilk

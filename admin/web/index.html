@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <title>Project Chronicles Server Admin</title>
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+  <body>
+    <header class="titlebar">
+      <div id="windowDrag" class="titlebar-drag">
+        <span class="brand">CHRONICLES</span>
+        <span class="brand-sub">Server Admin</span>
+        <span id="connectionBadge" class="badge badge-muted">Disconnected</span>
+        <span id="realmBadge" class="badge badge-muted hidden"></span>
+      </div>
+      <div class="window-buttons">
+        <button type="button" data-window="minimize" title="Minimize">&#x2013;</button>
+        <button type="button" data-window="maximize" title="Maximize">&#x25A1;</button>
+        <button type="button" data-window="close" class="window-close" title="Close">
+          &#x2715;
+        </button>
+      </div>
+    </header>
+
+    <div class="shell">
+      <nav class="sidebar" aria-label="Sections">
+        <button type="button" class="nav-item active" data-page="dashboard">Dashboard</button>
+        <button type="button" class="nav-item" data-page="realm">Realm</button>
+        <button type="button" class="nav-item" data-page="accounts">Accounts</button>
+        <button type="button" class="nav-item" data-page="characters">Characters</button>
+        <button type="button" class="nav-item" data-page="players">Live players</button>
+        <button type="button" class="nav-item" data-page="mail">Send mail</button>
+        <button type="button" class="nav-item" data-page="chat">
+          World chat
+          <span id="chatUnread" class="badge badge-blue hidden"></span>
+        </button>
+        <button type="button" class="nav-item" data-page="rates">Rates &amp; events</button>
+        <button type="button" class="nav-item" data-page="announce">Announcements</button>
+        <button type="button" class="nav-item" data-page="logs">Live logs</button>
+        <button type="button" class="nav-item" data-page="server">Server</button>
+        <div class="sidebar-footer">
+          <div class="muted small">Server time</div>
+          <div id="serverClock" class="mono">--</div>
+        </div>
+      </nav>
+
+      <main class="content">
+        <!-- Dashboard -->
+        <section id="page-dashboard" class="page active">
+          <div class="page-header">
+            <h1>Dashboard</h1>
+            <button type="button" class="button" id="dashboardRefresh">Refresh</button>
+          </div>
+          <div class="cards">
+            <article class="card">
+              <h2>Realm</h2>
+              <div class="stat-line">
+                <span id="dashRealmName" class="stat-title">--</span>
+                <span id="dashRealmState" class="badge badge-muted">--</span>
+              </div>
+              <div class="meter">
+                <div id="dashCapacityBar" class="meter-fill"></div>
+              </div>
+              <div class="muted">
+                <span id="dashOnline">0</span> / <span id="dashCapacity">0</span> characters online
+              </div>
+              <div class="toggle-row">
+                <label class="switch"
+                  ><input type="checkbox" id="dashMaintenance" /><span></span
+                ></label>
+                <span>Maintenance (GM only)</span>
+              </div>
+              <div class="toggle-row">
+                <label class="switch"
+                  ><input type="checkbox" id="dashCreation" /><span></span
+                ></label>
+                <span>Character creation closed</span>
+              </div>
+            </article>
+
+            <article class="card">
+              <h2>Population</h2>
+              <dl class="facts">
+                <dt>In world</dt>
+                <dd id="dashInWorld">0</dd>
+                <dt>World connections</dt>
+                <dd id="dashConnections">0</dd>
+                <dt>Lobby sessions</dt>
+                <dd id="dashLobby">0</dd>
+                <dt>Accounts</dt>
+                <dd id="dashAccounts">0</dd>
+                <dt>Characters</dt>
+                <dd id="dashCharacters">0</dd>
+              </dl>
+            </article>
+
+            <article class="card">
+              <h2>Experience rate</h2>
+              <div class="big-number" id="dashExpRate">1.0x</div>
+              <div class="muted">Base <span id="dashExpBase">100</span>% plus active events</div>
+              <ul id="dashActiveEvents" class="plain-list"></ul>
+            </article>
+
+            <article class="card">
+              <h2>Server</h2>
+              <dl class="facts">
+                <dt>Uptime</dt>
+                <dd id="dashUptime">--</dd>
+                <dt>Started</dt>
+                <dd id="dashStarted">--</dd>
+                <dt>Storage</dt>
+                <dd id="dashStorage">--</dd>
+                <dt>HTTP / world port</dt>
+                <dd id="dashPorts">--</dd>
+                <dt>Client build</dt>
+                <dd id="dashClient" class="mono">--</dd>
+                <dt>Log level</dt>
+                <dd id="dashLogLevel">--</dd>
+                <dt>Settings saved</dt>
+                <dd id="dashPersisted">--</dd>
+              </dl>
+            </article>
+          </div>
+        </section>
+
+        <!-- Realm -->
+        <section id="page-realm" class="page">
+          <div class="page-header"><h1>Realm</h1></div>
+          <form id="realmForm" class="panel form-grid">
+            <label>Realm name<input id="realmName" maxlength="64" required /></label>
+            <label>Site display name<input id="realmSite" maxlength="64" required /></label>
+            <label
+              >Capacity (characters online)<input
+                id="realmCapacity"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]{1,6}"
+                maxlength="6"
+                autocomplete="off"
+                required
+            /></label>
+            <label
+              >Realm-list label
+              <select id="realmLabel">
+                <option value="none">None</option>
+                <option value="new">New</option>
+                <option value="recommended">Recommended</option>
+              </select>
+              <span class="small">Choose None, New or Recommended. This is not a text field.</span>
+            </label>
+            <div class="toggle-row span-2">
+              <label class="switch"
+                ><input type="checkbox" id="realmMaintenance" /><span></span
+              ></label>
+              <span>Maintenance: lists the realm as GM-only and refuses non-GM realm entry</span>
+            </div>
+            <div class="toggle-row span-2">
+              <label class="switch"
+                ><input type="checkbox" id="realmCreation" /><span></span
+              ></label>
+              <span>Close character creation</span>
+            </div>
+            <p class="muted span-2">
+              The realm list shows Normal below 80% of capacity, Congested from 80% and Full at
+              capacity. Changes apply to the next realm list and realm entry; connected players stay
+              connected.
+            </p>
+            <div class="form-actions span-2">
+              <span id="realmSaveStatus" class="muted small" role="status"></span>
+              <button id="realmSave" type="submit" class="button button-primary">Save realm</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Accounts -->
+        <section id="page-accounts" class="page">
+          <div class="page-header">
+            <h1>Accounts</h1>
+            <div class="header-tools">
+              <input id="accountSearch" type="search" placeholder="Search by name" />
+              <button type="button" class="button" id="accountRefresh">Refresh</button>
+              <button type="button" class="button button-primary" id="accountCreate">
+                New account
+              </button>
+            </div>
+          </div>
+          <div class="panel table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Characters</th>
+                  <th>Lobby</th>
+                  <th>In world</th>
+                  <th>Created</th>
+                </tr>
+              </thead>
+              <tbody id="accountRows"></tbody>
+            </table>
+          </div>
+          <div id="accountTotal" class="muted small"></div>
+        </section>
+
+        <!-- Characters -->
+        <section id="page-characters" class="page">
+          <div class="page-header">
+            <h1>Characters</h1>
+            <div class="header-tools">
+              <input id="characterSearch" type="search" placeholder="Search character or account" />
+              <button type="button" class="button" id="characterRefresh">Refresh</button>
+            </div>
+          </div>
+          <div class="panel table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Account</th>
+                  <th>Class</th>
+                  <th>Level</th>
+                  <th>EXP</th>
+                  <th>Map</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="characterRows"></tbody>
+            </table>
+          </div>
+          <div id="characterTotal" class="muted small"></div>
+        </section>
+
+        <!-- Live players -->
+        <section id="page-players" class="page">
+          <div class="page-header">
+            <h1>Live players</h1>
+            <div class="header-tools">
+              <label class="inline-check"
+                ><input type="checkbox" id="playersAuto" checked /> Auto refresh</label
+              >
+              <button type="button" class="button" id="playersRefresh">Refresh</button>
+            </div>
+          </div>
+          <div class="panel table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Conn.</th>
+                  <th>Character</th>
+                  <th>Account</th>
+                  <th>Level / class</th>
+                  <th>Position</th>
+                  <th>Address</th>
+                  <th>Connected</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="playerRows"></tbody>
+            </table>
+          </div>
+          <div id="playersNote" class="muted small"></div>
+        </section>
+
+        <!-- World chat -->
+        <section id="page-chat" class="page">
+          <div class="page-header">
+            <h1>World chat</h1>
+            <div class="header-tools">
+              <input id="chatSearch" type="search" placeholder="Filter by sender or text" />
+              <label class="inline-check"
+                ><input type="checkbox" id="chatFollow" checked /> Follow</label
+              >
+              <button type="button" class="button" id="chatPause">Pause</button>
+              <button type="button" class="button" id="chatClear">Clear view</button>
+            </div>
+          </div>
+          <div id="chatView" class="chat-view"></div>
+          <form id="chatForm" class="chat-compose">
+            <input id="chatSender" maxlength="32" value="[Server]" title="Sender label" />
+            <input
+              id="chatMessage"
+              maxlength="512"
+              placeholder="Send a World chat message to everyone"
+              autocomplete="off"
+              required
+            />
+            <button type="submit" class="button button-primary">Send</button>
+          </form>
+          <div id="chatStatus" class="muted small"></div>
+        </section>
+
+        <!-- Mail -->
+        <section id="page-mail" class="page">
+          <div class="page-header"><h1>Send mail</h1></div>
+          <form id="mailForm" class="panel form-grid">
+            <label
+              >Recipient account ID<input id="mailAccount" type="number" min="1" step="1" required
+            /></label>
+            <label
+              >Character ID (optional)<input
+                id="mailCharacter"
+                type="number"
+                min="1"
+                step="1"
+                placeholder="Any character on this account"
+            /></label>
+            <label
+              >Realm ID<input id="mailWorld" type="number" min="1" step="1" value="1" required
+            /></label>
+            <label
+              >Expires after (days)<input
+                id="mailRetention"
+                type="number"
+                min="1"
+                max="365"
+                step="1"
+                value="30"
+                required
+            /></label>
+            <label class="span-2">Title<input id="mailTitle" maxlength="256" required /></label>
+            <label class="span-2"
+              >Message<textarea id="mailText" maxlength="12000" rows="5"></textarea>
+            </label>
+            <label
+              >Attachment expiry (days, optional)<input
+                id="mailAttachmentRetention"
+                type="number"
+                min="1"
+                max="365"
+                step="1"
+                placeholder="Same as mail"
+            /></label>
+            <p class="muted small">
+              Without a character ID, this mail can be claimed once by any character on the
+              recipient account in this realm. Find recipient IDs under Accounts and Characters.
+            </p>
+            <div class="span-2">
+              <div class="panel-header">
+                <h2>Attachments</h2>
+                <button type="button" class="button" id="mailAddAttachment">Add attachment</button>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Reward</th>
+                      <th>Item ID</th>
+                      <th>Quantity</th>
+                      <th>Grade</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="mailAttachmentRows"></tbody>
+                </table>
+              </div>
+              <p class="muted small">
+                Up to 32 attachments. Item IDs must exist in the server catalog. Leave grade at its
+                default unless sending equipment with a specific grade.
+              </p>
+            </div>
+            <p id="mailResult" class="muted span-2" aria-live="polite">
+              Players receive the mail in their mailbox and claim its attachments in game.
+            </p>
+            <div class="form-actions span-2">
+              <button type="button" class="button" id="mailNew">New mail</button>
+              <button type="submit" class="button button-primary" id="mailSend">
+                Deliver mail
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Rates & events -->
+        <section id="page-rates" class="page">
+          <div class="page-header"><h1>Rates &amp; events</h1></div>
+          <div class="panel">
+            <h2>Base experience rate</h2>
+            <div class="rate-row">
+              <div class="big-number" id="ratesEffective">Loading...</div>
+              <div class="muted">
+                effective now (base + active events, capped at
+                <span id="ratesMaximum">—</span>%)
+              </div>
+            </div>
+            <div class="preset-row" id="ratePresets">
+              <button type="button" class="button" data-rate="100">1x</button>
+              <button type="button" class="button" data-rate="200">2x</button>
+              <button type="button" class="button" data-rate="300">3x</button>
+              <button type="button" class="button" data-rate="500">5x</button>
+              <button type="button" class="button" data-rate="1000">10x</button>
+            </div>
+            <form id="rateForm" class="inline-form">
+              <label
+                >Custom base rate (%)<input id="rateBase" type="number" min="0" max="1000" required
+              /></label>
+              <button id="rateApply" type="submit" class="button button-primary">Apply</button>
+            </form>
+            <p class="muted small">
+              Applies to server-awarded EXP (quest rewards and adventure objects) from the next
+              award on. Monster kills do not award EXP in the emulator yet.
+            </p>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2>Scheduled events</h2>
+              <button type="button" class="button button-primary" id="eventCreate">
+                New event
+              </button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>EXP bonus</th>
+                    <th>Starts</th>
+                    <th>Ends</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="eventRows"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Announcements -->
+        <section id="page-announce" class="page">
+          <div class="page-header"><h1>Announcements</h1></div>
+          <form id="announceForm" class="panel form-grid">
+            <label class="span-2"
+              >Message<textarea id="announceText" maxlength="512" rows="4" required></textarea>
+            </label>
+            <label class="inline-check"
+              ><input type="checkbox" id="announceChat" checked /> World chat</label
+            >
+            <label
+              >Chat sender label<input id="announceSender" maxlength="32" value="[Server]"
+            /></label>
+            <label
+              >On-screen notice (experimental)
+              <select id="announceNotice">
+                <option value="none">None</option>
+                <option value="text">Text</option>
+                <option value="banner">Banner</option>
+                <option value="popup">Popup</option>
+              </select>
+            </label>
+            <p class="muted small span-2">
+              World chat reaches every character connected to the lobby/front service. The on-screen
+              notice uses the world packet PS2C_SystemMessageNoti with free text; the original
+              client has not yet been observed to display free text this way.
+            </p>
+            <div class="form-actions span-2">
+              <button type="submit" class="button button-primary">Send announcement</button>
+            </div>
+          </form>
+          <div class="panel">
+            <h2>Sent this session</h2>
+            <ul id="announceHistory" class="plain-list"></ul>
+          </div>
+          <form id="messageConfigForm" class="panel form-grid">
+            <div class="panel-header span-2">
+              <h2>Automatic server messages</h2>
+              <button type="button" class="button" id="messageConfigRefresh">
+                Reload settings
+              </button>
+            </div>
+            <label
+              >Server sender label<input
+                id="messageSender"
+                maxlength="32"
+                value="[Server]"
+                required
+            /></label>
+            <label
+              >Send every (minutes)<input
+                id="messageInterval"
+                type="number"
+                min="0.01"
+                max="10080"
+                step="any"
+                value="5"
+                required
+            /></label>
+            <label class="inline-check span-2"
+              ><input type="checkbox" id="messageRecurringEnabled" /> Enable recurring
+              messages</label
+            >
+            <div class="span-2">
+              <div class="panel-header">
+                <h2>Recurring messages</h2>
+                <button type="button" class="button" id="messageAddRecurring">Add message</button>
+              </div>
+              <div id="messageRecurringRows"></div>
+              <p id="rateSaveStatus" class="muted small" role="status">Waiting for server rates.</p>
+              <p class="muted small">
+                Messages rotate in order, one each interval. The first is sent after one interval.
+                Announcements appear as on-screen banners.
+              </p>
+            </div>
+            <label class="inline-check span-2"
+              ><input type="checkbox" id="messageWelcomeEnabled" /> Send a private welcome when a
+              player enters the world</label
+            >
+            <label class="span-2"
+              >Welcome text (one chat message per line, up to eight lines)<textarea
+                id="messageWelcome"
+                rows="4"
+                placeholder="Welcome! Type !help for server commands."
+              ></textarea>
+            </label>
+            <p id="messageConfigStatus" class="muted small span-2" aria-live="polite">
+              Recurring and welcome messages can be enabled independently.
+            </p>
+            <div class="form-actions span-2">
+              <button type="submit" class="button button-primary" id="messageConfigSave" disabled>
+                Save automatic messages
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Logs -->
+        <section id="page-logs" class="page">
+          <div class="page-header">
+            <h1>Live logs</h1>
+            <div class="header-tools">
+              <select id="logFilterLevel" title="Minimum level shown">
+                <option value="trace">All levels</option>
+                <option value="info" selected>Info and above</option>
+                <option value="warning">Warnings and errors</option>
+                <option value="error">Errors only</option>
+              </select>
+              <input id="logSearch" type="search" placeholder="Filter text" />
+              <label class="inline-check"
+                ><input type="checkbox" id="logFollow" checked /> Follow</label
+              >
+              <button type="button" class="button" id="logPause">Pause</button>
+              <button type="button" class="button" id="logClear">Clear view</button>
+            </div>
+          </div>
+          <div id="logView" class="log-view mono"></div>
+          <div class="log-footer">
+            <span id="logStatus" class="muted small"></span>
+            <label class="small"
+              >Server log level
+              <select id="serverLogLevel">
+                <option value="trace">trace</option>
+                <option value="debug">debug</option>
+                <option value="info">info</option>
+                <option value="warning">warning</option>
+                <option value="error">error</option>
+                <option value="critical">critical</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <!-- Server -->
+        <section id="page-server" class="page">
+          <div class="page-header"><h1>Server</h1></div>
+          <form id="connectForm" class="panel form-grid">
+            <h2 class="span-2">Connection</h2>
+            <label class="span-2">Server
+              <select id="adminServerChoice"><option value="custom">Advanced: custom connection</option></select>
+            </label>
+            <p id="connectionPresetHint" class="muted small span-2">
+              Select Local testing or a configured server to connect automatically using your existing
+              administrator access. No address or token entry is needed.
+            </p>
+            <div id="customConnectionFields" class="form-grid span-2 hidden">
+              <label class="span-2">
+                Server address<input id="connectUrl" placeholder="http://127.0.0.1:8080" />
+              </label>
+              <label class="span-2">Admin token file<input id="connectTokenFile" /></label>
+              <label class="span-2">
+                Or paste the token (kept in memory only)
+                <input id="connectToken" type="password" autocomplete="off" />
+              </label>
+              <p class="muted small span-2">
+                Custom connections use the server's admin token. Plain HTTP is accepted for
+                loopback addresses only.
+              </p>
+              <div class="span-2">
+                <button type="button" class="button" id="connectDefaults">Use defaults</button>
+              </div>
+            </div>
+            <div class="form-actions span-2">
+              <button id="connectSubmit" type="submit" class="button button-primary">Reconnect</button>
+            </div>
+          </form>
+
+          <div class="panel danger-zone">
+            <h2>Shutdown</h2>
+            <p class="muted">
+              Stops the server gracefully: connected characters have their position saved and are
+              disconnected. Start it again with the same script or launcher you used before.
+            </p>
+            <button type="button" class="button button-danger" id="shutdownButton">
+              Shut down server
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <aside id="drawer" class="drawer hidden" aria-live="polite">
+      <div class="drawer-header">
+        <h2 id="drawerTitle">Details</h2>
+        <button type="button" class="button" id="drawerClose">Close</button>
+      </div>
+      <div id="drawerBody" class="drawer-body"></div>
+    </aside>
+
+    <dialog id="modal" class="modal">
+      <form id="modalForm" method="dialog">
+        <h2 id="modalTitle"></h2>
+        <div id="modalBody" class="modal-body"></div>
+        <div class="form-actions">
+          <button type="button" class="button" id="modalCancel">Cancel</button>
+          <button type="submit" class="button button-primary" id="modalConfirm">Confirm</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div id="toasts" class="toasts" aria-live="assertive"></div>
+    <script src="admin.js"></script>
+  </body>
+</html>

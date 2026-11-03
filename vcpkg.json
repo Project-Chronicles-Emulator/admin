@@ -1,0 +1,19 @@
+{
+  "name": "chronicles-admin",
+  "version-string": "0.1.0",
+  "builtin-baseline": "00807e89724847a866033a2f042c38fafae3c534",
+  "dependencies": [
+    "boost-asio",
+    "nlohmann-json",
+    "openssl",
+    "gtest",
+    "webview2"
+  ],
+  "overrides": [
+    {
+      "name": "openssl",
+      "version": "3.6.5",
+      "port-version": 2
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "registries": [
+    {
+      "kind": "git",
+      "repository": "https://github.com/microsoft/vcpkg",
+      "baseline": "5363acb796e576328288fae60c25304e227e9839",
+      "packages": ["openssl"]
+    }
+  ]
+}
