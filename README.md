@@ -17,4 +17,4 @@ are excluded from this repository.
 
 Shared desktop/protocol helpers needed by this application are included in this checkout;
 no sibling repository is required to build it. Backend data and database installation
-belong to the separate `server-emulator` repository.
+belong to the separate `game-server` repository.
