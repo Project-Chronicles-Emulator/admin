@@ -1,0 +1,37 @@
+name: Bug report
+description: Report a reproducible failure in the emulator or its tools.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: "Include a small reproduction. Keep credentials, raw captures, player/session values and private URLs out of this report."
+  - type: input
+    id: component
+    attributes:
+      label: Component and commit
+      description: Repository, commit and build configuration.
+    validations:
+      required: true
+  - type: textarea
+    id: identity
+    attributes:
+      label: Client, data and environment identity
+      description: OS/toolchain, client build/hash and generated-data identity where relevant. State whether the original client was used.
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Smallest sequence, including relevant local configuration without secrets.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Redacted evidence and checks
+      description: Short error excerpt, related test/request, and what passed or failed. Screenshots can supplement the reproduction.

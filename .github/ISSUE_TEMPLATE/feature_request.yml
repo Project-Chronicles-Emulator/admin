@@ -1,0 +1,28 @@
+name: Feature proposal
+description: Define a bounded feature and the evidence needed to implement it.
+title: "[Feature] "
+body:
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Player or operator behavior
+      description: Describe the complete supported flow and why it is useful.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and ownership
+      description: Owning component/module, prerequisites, state/persistence and intended limits.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and open questions
+      description: Related reference section, schemas/captures/static findings, and Candidate/custom assumptions. Do not attach raw private data.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance checks
+      description: Success, refusal, retry/reconnect cases and any required original-client trial.
